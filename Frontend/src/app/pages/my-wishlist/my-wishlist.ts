@@ -10,11 +10,11 @@ import { EmptyWishlist } from './empty-wishlist/empty-wishlist';
   selector: 'app-my-wishlist',
   imports: [BackButton, ProductCard, MatIcon, MatAnchor, EmptyWishlist],
   template: `
-    <div class="mx-auto max-w-300 py-6 px-4">
+    <div class="mx-auto max-w-300 py-6">
       <app-back-button label="Continue Shopping" navigateTo="/products/all" class="mb-6" />
       @if (store.wishlistCount() > 0) {
         <div class="flex justify-between items-center mb-6">
-          <h1 class="text-2xl font-bold">My Wishlist</h1>
+          <h1 class="text-3xl font-bold">My Wishlist</h1>
           <span class="text-gray-500 text-xl">{{ store.wishlistCount() }} items</span>
         </div>
 

@@ -12,14 +12,16 @@ import { EcommerceStore } from '../../ecommerce-store';
     <div class="flex items-center gap-2">
       <button
         matIconButton
-        routerLink="/wishlist"
         [matBadge]="store.wishlistCount()"
         [matBadgeHidden]="store.wishlistCount() === 0"
+        routerLink="/wishlist"
       >
         <mat-icon>favorite</mat-icon>
       </button>
       <button
         matIconButton
+        [matBadge]="store.cartCount()"
+        [matBadgeHidden]="store.cartCount() === 0"
         routerLink="/cart"
       >
         <mat-icon>shopping_cart</mat-icon>
