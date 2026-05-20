@@ -8,6 +8,8 @@ import { MatDialog } from "@angular/material/dialog";
 import { SignInDialog } from "./components/sign-in-dialog/sign-in-dialog";
 import { SignInParams, SignUpParams, User } from "./models/user";
 import { Router } from "@angular/router";
+import { Order } from "./models/order";
+import { withStorageSync } from '@angular-architects/ngrx-toolkit';
 
 export type EcommerceStore = {
   products: Product[];
@@ -15,6 +17,7 @@ export type EcommerceStore = {
   wishlistItems: Product[];
   cartItems: CartItem[];
   user: User | undefined;
+  loading: boolean;
 }
 
 export const EcommerceStore = signalStore(
@@ -262,7 +265,13 @@ export const EcommerceStore = signalStore(
     wishlistItems: [],
     cartItems: [],
     user: undefined,
+    loading: false,
   } as EcommerceStore),
+
+  withStorageSync({
+    key: 'modern-store',
+    select: ({wishlistItems, cartItems, user}) => ({ wishlistItems, cartItems, user})
+  }),
 
   withComputed(({ category, products, wishlistItems, cartItems }) => ({
     filteredProducts: computed(() => {
@@ -393,6 +402,37 @@ export const EcommerceStore = signalStore(
       router.navigate(['/checkout'])
     },
 
+    placeOrder: async() => {
+      patchState(store, { loading: true });
+
+      const user = store.user();
+
+      if(!user){
+        toaster.error('Please login before placing order');
+        patchState(store, {loading: false});
+        return;
+      }
+
+      const order: Order = {
+        id: crypto.randomUUID(),
+        userId: user.id,
+        total: Math.round(store
+          .cartItems()
+          .reduce((acc, item) => acc + item.quantity * item.product.price, 0)),
+        items: store.cartItems(),
+        paymentStatus: 'success',
+      };
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      patchState(store, { loading: false, cartItems: [], });
+      router.navigate(['order-success']);
+    },
+
+    loading(){
+
+    },
+
     signIn: ({ email, password, checkout, dialogId }: SignInParams) => {
       patchState(store, {
         user: {
@@ -430,10 +470,6 @@ export const EcommerceStore = signalStore(
     signOut(){
       patchState(store, { user: undefined });
     },
-
-    loading(){
-
-    }
 
   }))
 );
