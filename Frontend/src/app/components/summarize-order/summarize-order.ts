@@ -23,6 +23,7 @@ import { CurrencyPipe } from '@angular/common';
           <span>{{ total() | currency }}</span>
         </div>
       </div>
+      <ng-content select="[actionButtons]"/>
     </div>
   `,
   styles: ``,

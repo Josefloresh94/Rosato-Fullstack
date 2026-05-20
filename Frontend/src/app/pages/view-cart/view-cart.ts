@@ -4,10 +4,11 @@ import { EcommerceStore } from '../../ecommerce-store';
 import { ListCartItems } from "./list-cart-items/list-cart-items";
 import { TeaseWishlist } from "./tease-wishlist/tease-wishlist";
 import { SummarizeOrder } from "../../components/summarize-order/summarize-order";
+import { MatAnchor } from "@angular/material/button";
 
 @Component({
   selector: 'app-view-cart',
-  imports: [BackButton, ListCartItems, TeaseWishlist, SummarizeOrder],
+  imports: [BackButton, ListCartItems, TeaseWishlist, SummarizeOrder, MatAnchor],
   template: `
     <div class="mx-auto max-w-300 py-6">
       <app-back-button label="Continue Shopping" navigateTo="/products/all" class="mb-6" />
@@ -18,7 +19,17 @@ import { SummarizeOrder } from "../../components/summarize-order/summarize-order
           <app-list-cart-items />
         </div>
         <div>
-          <app-summarize-order />
+          <app-summarize-order>
+            <ng-container actionButtons>
+              <button
+                matButton="filled"
+                class="w-full mt-6 py-3"
+                (click)="store.procedeToCheckout()"
+                [disabled]="store.cartCount() === 0">
+                Proceed to Checkout
+              </button>
+            </ng-container>
+          </app-summarize-order>
         </div>
       </div>
     </div>

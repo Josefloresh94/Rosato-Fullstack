@@ -4,12 +4,17 @@ import { computed, inject } from "@angular/core";
 import { produce } from "immer";
 import { Toaster } from "./services/toaster";
 import { CartItem } from "./models/cart";
+import { MatDialog } from "@angular/material/dialog";
+import { SignInDialog } from "./components/sign-in-dialog/sign-in-dialog";
+import { SignInParams, SignUpParams, User } from "./models/user";
+import { Router } from "@angular/router";
 
 export type EcommerceStore = {
   products: Product[];
   category: string;
   wishlistItems: Product[];
   cartItems: CartItem[];
+  user: User | undefined;
 }
 
 export const EcommerceStore = signalStore(
@@ -256,6 +261,7 @@ export const EcommerceStore = signalStore(
     category: 'all',
     wishlistItems: [],
     cartItems: [],
+    user: undefined,
   } as EcommerceStore),
 
   withComputed(({ category, products, wishlistItems, cartItems }) => ({
@@ -267,7 +273,8 @@ export const EcommerceStore = signalStore(
     cartCount: computed(() => cartItems().reduce((total, item) => total + item.quantity, 0)),
   })),
 
-  withMethods((store, toaster = inject(Toaster)) => ({
+  withMethods((store, toaster = inject(Toaster), matDialog = inject(MatDialog), router = inject(Router)) => ({
+
     setCategory: signalMethod<string>((category: string) => {
       patchState(store, { category });
     }),
@@ -318,14 +325,42 @@ export const EcommerceStore = signalStore(
     },
 
     addAllWishlistToCart: () => {
+      const addedIds: string[] = [];
+      const skippedNames: string[] = [];
+
       const updatedCartItems = produce(store.cartItems(), (draft) => {
-        store.wishlistItems().forEach(p => {
-          if (!draft.find(c => c.product.id === p.id)){
-            draft.push({product: p, quantity: 1});
+        store.wishlistItems().forEach((p) => {
+          // skip products that are out of stock
+          if (!p.inStock) {
+            skippedNames.push(p.name);
+            return;
           }
-        })
-      })
-      patchState(store, { cartItems: updatedCartItems, wishlistItems: [] });
+
+          const existing = draft.find((c) => c.product.id === p.id);
+          if (!existing) {
+            draft.push({ product: p, quantity: 1 });
+            addedIds.push(p.id);
+          } else {
+            // if already in cart, increment quantity
+            existing.quantity += 1;
+            addedIds.push(p.id);
+          }
+        });
+      });
+
+      // remove only the items that were actually moved to cart
+      const updatedWishlistItems = store.wishlistItems().filter((p) => !addedIds.includes(p.id));
+
+      patchState(store, { cartItems: updatedCartItems, wishlistItems: updatedWishlistItems });
+
+      if (addedIds.length > 0) {
+        toaster.success(`${addedIds.length} item(s) moved from wishlist to cart.`);
+      }
+      if (skippedNames.length > 0) {
+        toaster.error(
+          `${skippedNames.join(', ')} ${skippedNames.length === 1 ? 'is' : 'are'} out of stock and remain in your wishlist.`,
+        );
+      }
     },
 
     moveToWishlist: (product: Product) => {
@@ -343,6 +378,62 @@ export const EcommerceStore = signalStore(
         cartItems: store.cartItems().filter((c) => c.product.id !== product.id),
       });
     },
+
+    procedeToCheckout: () => {
+      if (!store.user()) {
+        matDialog.open(SignInDialog, {
+          disableClose: true,
+          data: {
+            checkout: true
+          },
+        });
+        return;
+      }
+
+      router.navigate(['/checkout'])
+    },
+
+    signIn: ({ email, password, checkout, dialogId }: SignInParams) => {
+      patchState(store, {
+        user: {
+          id: '1',
+          email,
+          name: 'John Doe',
+          imageUrl: 'https://randomuser.me/api/portraits/men/1.jpg'
+        },
+      });
+
+      matDialog.getDialogById(dialogId)?.close();
+
+      if(checkout){
+        router.navigate(['/checkout']);
+      }
+    },
+
+    signUp: ({ email, password, name, checkout, dialogId }: SignUpParams) => {
+      patchState(store, {
+        user: {
+          id: '1',
+          email,
+          name: 'John Doe',
+          imageUrl: 'https://randomuser.me/api/portraits/men/1.jpg'
+        },
+      });
+
+      matDialog.getDialogById(dialogId)?.close();
+
+      if(checkout){
+        router.navigate(['/checkout']);
+      }
+    },
+
+    signOut(){
+      patchState(store, { user: undefined });
+    },
+
+    loading(){
+
+    }
 
   }))
 );

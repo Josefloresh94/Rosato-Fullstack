@@ -10,7 +10,7 @@ import { MatButtonModule } from "@angular/material/button";
   selector: 'app-show-cart-item',
   imports: [CurrencyPipe, QtySelector, MatIcon, MatButtonModule],
   template: `
-    <div class="grid grid-cols-3 gird-cols-[3fr_1fr_1fr]">
+    <div class="grid grid-cols-3 grid-cols-[3fr_1fr_1fr]">
       <div class="flex items-center gap-4">
         <img
           [src]="item().product.imageUrl"
@@ -23,10 +23,13 @@ import { MatButtonModule } from "@angular/material/button";
         </div>
       </div>
 
-      <app-qty-selector [quantity]="item().quantity" (qtyUpdated)="store.setItemQuantity({ productId: item().product.id, quantity: $event })" />
+      <app-qty-selector
+        [quantity]="item().quantity"
+        (qtyUpdated)="store.setItemQuantity({ productId: item().product.id, quantity: $event })"
+      />
 
       <div class="flex flex-col items-end">
-        <div class="">
+        <div class="text-right font-semibold text-lg mb-2">
           {{ total() | currency }}
         </div>
         <div class="flex -me-3">
