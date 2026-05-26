@@ -2,10 +2,11 @@ import { Component, computed, inject, input } from '@angular/core';
 import { EcommerceStore } from '../../ecommerce-store';
 import { BackButton } from "../../components/back-button/back-button";
 import { ProductInfo } from "./product-info/product-info";
+import { ViewReviews } from "./view-reviews/view-reviews";
 
 @Component({
   selector: 'app-view-product-detail',
-  imports: [BackButton, ProductInfo, ProductInfo],
+  imports: [BackButton, ProductInfo, ProductInfo, ViewReviews],
   template: `
     <div class="mx-auto max-w-300 py-6">
       <app-back-button class="mb-6" label="Continue Shopping" [navigateTo]="backRoute()"/>
@@ -15,11 +16,13 @@ import { ProductInfo } from "./product-info/product-info";
             [src]="product.imageUrl"
             [alt]="product.name"
             class="w-125 h-138 object-cover rounded-lg"
+            [style.view-transition-name]="'product-image-' + product.id"
           />
           <div class="flex-1">
             <app-product-info [product]="product"/>
           </div>
         </div>
+        <app-view-reviews [product]="product"/>
       }
     </div>
   `,

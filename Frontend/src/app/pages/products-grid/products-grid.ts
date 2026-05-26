@@ -57,6 +57,7 @@ import { ToggleWishlistButton } from "../../components/toggle-wishlist-button/to
               <app-toggle-wishlist-button
                 class="absolute! z-10 top-3 right-3"
                 [product]="product"
+                [style.view-transition-name]="'wishlist-button-' + product.id"
               />
             </app-product-card>
           }
