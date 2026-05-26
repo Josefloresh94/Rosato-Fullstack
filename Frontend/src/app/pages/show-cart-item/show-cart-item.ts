@@ -10,7 +10,7 @@ import { MatButtonModule } from "@angular/material/button";
   selector: 'app-show-cart-item',
   imports: [CurrencyPipe, QtySelector, MatIcon, MatButtonModule],
   template: `
-    <div class="grid grid-cols-3 grid-cols-[3fr_1fr_1fr]">
+    <div class="grid grid-cols-[3fr_1fr_1fr]">
       <div class="flex items-center gap-4">
         <img
           [src]="item().product.imageUrl"

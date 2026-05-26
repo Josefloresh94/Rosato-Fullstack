@@ -819,10 +819,10 @@ export const EcommerceStore = signalStore(
     writeReview: false,
   } as EcommerceStore),
 
-  withStorageSync({
-    key: 'modern-store',
-    select: ({ wishlistItems, cartItems, user }) => ({ wishlistItems, cartItems, user }),
-  }),
+  // withStorageSync({
+  //   key: 'modern-store',
+  //   select: ({ wishlistItems, cartItems, user }) => ({ wishlistItems, cartItems, user }),
+  // }),
 
   withComputed(({ category, products, wishlistItems, cartItems, selectedProductId }) => ({
     filteredProducts: computed(() => {
