@@ -15,6 +15,7 @@ import { AddReviewParams, UserReview } from "./models/user-review";
 export type EcommerceStore = {
   products: Product[];
   category: string;
+  searchTerm: string;
   wishlistItems: Product[];
   cartItems: CartItem[];
   user: User | undefined;
@@ -811,6 +812,7 @@ export const EcommerceStore = signalStore(
       },
     ],
     category: 'all',
+    searchTerm: '',
     wishlistItems: [],
     cartItems: [],
     user: undefined,
@@ -824,10 +826,23 @@ export const EcommerceStore = signalStore(
   //   select: ({ wishlistItems, cartItems, user }) => ({ wishlistItems, cartItems, user }),
   // }),
 
-  withComputed(({ category, products, wishlistItems, cartItems, selectedProductId }) => ({
+  withComputed(({ category, products, searchTerm, wishlistItems, cartItems, selectedProductId }) => ({
+    // filteredProducts: computed(() => {
+    //   if (category() === 'all') return products();
+    //   return products().filter((p) => p.category === category().toLowerCase());
+    // }),
     filteredProducts: computed(() => {
-      if (category() === 'all') return products();
-      return products().filter((p) => p.category === category().toLowerCase());
+      const categoryValue = category();
+      const searchTermValue = searchTerm().toLowerCase();
+
+      return products().filter((product) => {
+        const matchesCategory = categoryValue === 'all' || product.category === categoryValue;
+        const matchesSearch =
+          product.name.toLowerCase().includes(searchTermValue) ||
+          product.description.toLowerCase().includes(searchTermValue);
+
+        return matchesCategory && matchesSearch;
+      });
     }),
 
     wishlistCount: computed(() => wishlistItems().length),
@@ -1041,16 +1056,16 @@ export const EcommerceStore = signalStore(
       addReview: async ({ title, comment, rating }: AddReviewParams) => {
         patchState(store, { loading: true });
         const product = store.products().find((p) => p.id === store.selectedProductId());
-        if(!product) {
+        if (!product) {
           patchState(store, { loading: false });
           return;
         }
 
         const review: UserReview = {
           id: crypto.randomUUID(),
-          title ,
-          comment ,
-          rating ,
+          title,
+          comment,
+          rating,
           productId: product.id,
           userName: store.user()?.name || '',
           userImageUrl: store.user()?.name || '',
@@ -1062,15 +1077,21 @@ export const EcommerceStore = signalStore(
           draft[index].reviews.push(review);
           draft[index].rating =
             Math.round(
-              (draft[index].reviews.reduce((acc, r) => acc + r.rating, 0) / draft[index].reviews.length) * 10
+              (draft[index].reviews.reduce((acc, r) => acc + r.rating, 0) /
+                draft[index].reviews.length) *
+                10,
             ) / 10;
           draft[index].reviewCount = draft[index].reviews.length;
         });
 
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        patchState(store, { loading: false, products: updatedProducts, writeReview: false })
+        patchState(store, { loading: false, products: updatedProducts, writeReview: false });
         toaster.success('Review added successfully');
+      },
+
+      setSearchTerm: (term: string) => {
+        patchState(store, { searchTerm: term });
       },
     }),
   ),
