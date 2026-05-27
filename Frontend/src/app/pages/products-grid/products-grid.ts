@@ -7,6 +7,7 @@ import { RouterLink } from '@angular/router';
 import { TitleCasePipe } from '@angular/common';
 import { EcommerceStore } from '../../ecommerce-store';
 import { ToggleWishlistButton } from "../../components/toggle-wishlist-button/toggle-wishlist-button";
+import { Sidenav } from '../../services/sidenav';
 
 @Component({
   selector: 'app-products-grid',
@@ -24,7 +25,7 @@ import { ToggleWishlistButton } from "../../components/toggle-wishlist-button/to
   ],
   template: `
     <mat-sidenav-container class="h-full">
-      <mat-sidenav mode="side" opened="true">
+      <mat-sidenav mode="side" [opened]="sidenav.isOpen()">
         <div class="p-6">
           <h2 class="text-lg text-gray-900">Categories</h2>
           <mat-nav-list>
@@ -33,6 +34,7 @@ import { ToggleWishlistButton } from "../../components/toggle-wishlist-button/to
                 [activated]="cat === category()"
                 class="my-2"
                 [routerLink]="['/products', cat]"
+                (click)="sidenav.close()"
               >
                 <span
                   matListItemTitle
@@ -69,12 +71,8 @@ import { ToggleWishlistButton } from "../../components/toggle-wishlist-button/to
 })
 export default class ProductsGrid {
   category = input<string>('all');
-
+  sidenav = inject(Sidenav);
   store = inject(EcommerceStore);
-
-  addToCart(product: Product) {
-    console.log('Adding to cart:', product);
-  }
 
   categories = signal<string[]>([
     'all',

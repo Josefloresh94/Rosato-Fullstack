@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { HeaderActions } from "../header-actions/header-actions";
+import { Sidenav } from '../../services/sidenav';
 
 @Component({
   selector: 'app-header',
@@ -10,7 +11,11 @@ import { HeaderActions } from "../header-actions/header-actions";
   template: `
     <mat-toolbar class="w-full elevated py-2">
       <div class="max-w-300 mx-auto w-full flex items-center justify-between">
-        <button matIconButton class="example-icon" aria-label="Example icon-button with menu icon">
+        <button
+          matIconButton
+          class="example-icon"
+          aria-label="Toggle menu"
+          (click)="sidenav.toggle()">
           <mat-icon>menu</mat-icon>
         </button>
         <span>Rosato</span>
@@ -22,4 +27,6 @@ import { HeaderActions } from "../header-actions/header-actions";
   `,
   styles: ``,
 })
-export class Header {}
+export class Header {
+  sidenav = inject(Sidenav)
+}
