@@ -152,3 +152,9 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
+
+# Ruta física en tu disco duro donde se creará la carpeta para guardar las imágenes subidas
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+# El prefijo de URL para acceder a estas imágenes desde el navegador (ej: http://localhost:8000/media/products/foto.jpg)
+MEDIA_URL = "/media/"
