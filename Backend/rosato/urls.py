@@ -18,10 +18,16 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    # path("api-auth/", include("rest_framework.urls")),
+    # path("", include("docs.urls")),
+    path("api/", include("catalog.urls")),
+    path("api/", include("orders.urls")),
+    path("api/", include("reviews.urls")),
+    path("api/", include("users.urls")),
 ]
 
 # ESTO ES CRUCIAL: Mapea la carpeta media a la URL para que Angular pueda ver las fotos
