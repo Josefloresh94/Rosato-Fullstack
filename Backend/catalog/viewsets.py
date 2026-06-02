@@ -15,7 +15,9 @@ class CategoryViewSet(ModelViewSet):
 
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.filter(is_active=True).prefetch_related(
+        "images", "variants"
+    )
     serializer_class = ProductSerializer
 
 

@@ -37,7 +37,7 @@ class OrderItem(models.Model):
     variant = models.ForeignKey(
         ProductVariant, on_delete=models.PROTECT, null=True, blank=True
     )
-    product_name = models.CharField(max_length=200)  # Tu excelente decisión histórica
+    product_name = models.CharField(max_length=200)
     variant_info = models.CharField(max_length=200, blank=True, null=True)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.IntegerField()

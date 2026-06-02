@@ -56,7 +56,9 @@ INSTALLED_APPS = [
     # Librerías de terceros
     "rest_framework",
     "corsheaders",
+    "drf_spectacular",
     # Tus aplicaciones locales (Módulos de Rosato)
+    "docs",
     "users",
     "catalog",
     "orders",
@@ -148,6 +150,7 @@ CORS_ALLOWED_ORIGINS = env("CORS_ALLOWED_ORIGINS")
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
