@@ -1,5 +1,5 @@
-import { Component, inject, input, signal } from '@angular/core';
-import { Product } from '../../models/product';
+import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Product } from '../../models/catalog';
 import { ProductCard } from "../../components/product-card/product-card";
 import { MatSidenavContainer, MatSidenavContent, MatSidenav } from '@angular/material/sidenav';
 import { MatNavList, MatListItem, MatListItemTitle } from '@angular/material/list';
@@ -8,6 +8,7 @@ import { TitleCasePipe } from '@angular/common';
 import { EcommerceStore } from '../../ecommerce-store';
 import { ToggleWishlistButton } from "../../components/toggle-wishlist-button/toggle-wishlist-button";
 import { Sidenav } from '../../services/sidenav';
+import { Catalog } from '../../services/catalog';
 
 @Component({
   selector: 'app-products-grid',
@@ -69,7 +70,10 @@ import { Sidenav } from '../../services/sidenav';
   `,
   styles: ``,
 })
-export default class ProductsGrid {
+export default class ProductsGrid implements OnInit {
+  private readonly catalogService = inject(Catalog);
+
+  public products: Product[] = [];
   category = input<string>('all');
   sidenav = inject(Sidenav);
   store = inject(EcommerceStore);
@@ -93,5 +97,17 @@ export default class ProductsGrid {
 
   constructor() {
     this.store.setCategory(this.category);
+  }
+
+  ngOnInit(): void {
+    this.catalogService.getProducts().subscribe({
+      next: (data) => {
+        this.products = data; // Guardamos los productos reales de Django
+        console.log('Productos cargados desde Django:', this.products);
+      },
+      error: (err) => {
+        console.error('Error al conectar con el backend:', err);
+      }
+    });
   }
 }
