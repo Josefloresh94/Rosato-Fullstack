@@ -3,12 +3,14 @@ import { MenuItem } from '../../models/MenuItem';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatListItem } from '@angular/material/list';
+import { CdkMenuItem } from '@angular/cdk/menu';
 
 @Component({
   selector: 'app-item-menu',
-  imports: [RouterLink, RouterLinkActive, MatIcon, MatListItem],
+  imports: [RouterLink, RouterLinkActive, MatIcon, MatListItem, CdkMenuItem],
   template: `
-    <a
+    <button
+      cdkMenuItem
       class="menu-item flex items-center px-4 py-2 text-sm group-hover:bg-gray-200"
       mat-list-item
       [routerLink]="routeHistory() + '/' + item().route"
@@ -37,7 +39,7 @@ import { MatListItem } from '@angular/material/list';
           }
         </span>
       }
-    </a>
+    </button>
 
     @if (nestedItemOpen()) {
       <div @expandContractMenu>
@@ -58,12 +60,12 @@ import { MatListItem } from '@angular/material/list';
     }
 
     :host ::ng-deep .menu-item.selected-menu-item {
-      border-left-color: var(--mdc-theme-tertiary) !important;
+      border-left-color: var(--mat-sys-primary) !important;
     }
 
     :host ::ng-deep .menu-item.selected-menu-item mat-icon,
     :host ::ng-deep .menu-item.selected-menu-item span {
-      color: var(--mdc-theme-primary) !important;
+      color: var(--mat-sys-primary) !important;
     }
   `,
 })

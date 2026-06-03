@@ -1,13 +1,14 @@
 import { Component, computed, Input, signal } from '@angular/core';
 import { MenuItem } from '../../models/MenuItem';
 import { MatNavList } from '@angular/material/list';
+import { CdkMenu } from '@angular/cdk/menu';
 import { ItemMenu } from "../item-menu/item-menu";
 
 @Component({
   selector: 'app-custom-sidenav',
-  imports: [MatNavList, ItemMenu],
+  imports: [MatNavList, ItemMenu, CdkMenu],
   template: `
-    <div class="h-full pt-4 flex flex-col gap-4">
+    <div class="h-full pt-4 flex flex-col gap-4" cdkMenu>
       <div class="flex flex-col items-center">
         <img
           class="rounded-full"

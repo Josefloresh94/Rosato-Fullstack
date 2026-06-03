@@ -18,7 +18,7 @@ import { CustomSidenav } from './components/custom-sidenav/custom-sidenav';
       <mat-sidenav mode="side" [style.width]="sidenavWidth()" opened>
         <app-custom-sidenav [collapsed]="collapsed()" />
       </mat-sidenav>
-      <mat-sidenav-content class="content" [style.margin-left]="sidenavWidth()">
+      <mat-sidenav-content class="p-8" [style.margin-left]="sidenavWidth()">
         <router-outlet />
       </mat-sidenav-content>
     </mat-sidenav-container>
