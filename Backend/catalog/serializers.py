@@ -24,14 +24,17 @@ class ProductImageSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     variants = ProductVariantSerializer(many=True, read_only=True)
+    category_detail = CategorySerializer(source="category", read_only=True)
 
     class Meta:
         model = Product
         fields = [
             "id",
             "category",
+            "category_detail",
             "name",
             "slug",
+            "image",
             "brand",
             "short_description",
             "description",

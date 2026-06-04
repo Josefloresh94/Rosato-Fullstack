@@ -23,6 +23,7 @@ class Product(models.Model):
     )
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, unique=True)
+    image = models.ImageField(upload_to="products/", blank=True, null=True)
     brand = models.CharField(max_length=100)
     short_description = models.CharField(max_length=300)
     description = models.TextField()
