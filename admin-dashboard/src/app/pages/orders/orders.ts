@@ -1,140 +1,149 @@
-import { TitleCasePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIcon } from "@angular/material/icon";
+import { OrdersTable } from "../../components/orders/orders-table/orders-table";
+import { OrderDetails } from "../../components/orders/order-details/order-details";
+import { Toaster } from '../../services/toaster';
+import { OrdersService } from '../../services/orders-service';
+import { OrderStatus } from '../../models/order';
 @Component({
   selector: 'app-orders',
-  imports: [MatButtonModule, TitleCasePipe, MatIcon],
+  imports: [MatButtonModule, OrdersTable, OrderDetails],
   template: `
     <div class="mb-12">
-      <h1 class="text-4xl font-bold text-foreground mb-2">Orders</h1>
-      <p class="text-muted-foreground">
-        Manage your store's products. Add new products, edit existing ones, and keep your inventory
-        up to date.
+      <h1 class="text-4xl font-bold text-foreground mb-2">Órdenes</h1>
+      <p class="text-sm text-gray-500">
+        Monitorea y actualiza los despachos de la tienda en tiempo real.
       </p>
     </div>
-    <!-- Status Filter -->
-    <div class="flex gap-3 mb-8 pb-2">
-      @for (status of statuses; track $index) {
-        <button matFab extended class="mr-2">
-          {{ status === 'all' ? 'All Orders' : (status | titlecase) }}
-        </button>
-      }
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Order List -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
       <div class="lg:col-span-2">
-        <div class="bg-card border border-border rounded-lg overflow-hidden">
-          <!-- @if () { -->
-          <div class="p-12 text-center text-muted-foreground">
-            <p>No orders Found</p>
-          </div>
-          <!-- } @else { -->
-          <div class="divide-y divide-border">
-            <button
-              class="w-full p-6 flex flex-row items-center justify-between hover:bg-muted/50 transition-colors text-left"
-            >
-              <div class="flex-1">
-                <div class="flex items-center gap-3 mb-2">
-                  <mat-icon>view_in_ar</mat-icon>
-                  <p class="font-semibold text-foreground">ORD-001</p>
-                </div>
-                <p class="text-sm text-muted-foreground">1 item * $1000</p>
-              </div>
-              <div class="flex items-center gap-4">
-                <span class="text-xs px-3 py-1 rounded-full font-medium">Delivered</span>
-                <mat-icon>keyboard_arrow_right</mat-icon>
-              </div>
-            </button>
-          </div>
-          <!-- } -->
-        </div>
+        <app-orders-table
+          [orders]="filteredOrders()"
+          [selectedOrderId]="selectedOrder()?.id"
+          [(currentStatus)]="activeFilter"
+          (orderSelected)="onOrderSelect($event)"
+        >
+        </app-orders-table>
       </div>
 
-      <!-- Order Details -->
-      <div class="lg-cols-span-1">
-        <div class="bg-card border border-border rounded-lg p-12 text-center text-muted-foreground">
-          <mat-icon>view_in_ar</mat-icon>
-          <p>Select an order to view details</p>
-        </div>
-        <div class="bg-card border border-border rounded-lg p-6 sticky top-8">
-          <h2 class="font-semibold text-lg text-foreground mb-6">Order Details</h2>
-
-          <div class="space-y-6">
-            <!--  Order Number -->
-            <div>
-              <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                Order Number
-              </p>
-              <p class="font-semibold text-foreground">
-                ORD-001
-              </p>
-            </div>
-
-            <!-- {/* Status */} -->
-            <div>
-              <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                Status
-              </p>
-              <div class="flex gap-2">
-                @for (status of statuses; track $index) {
-                  <button matFab extended>
-                    {{ status === 'all' ? 'All Orders' : (status | titlecase) }}
-                  </button>
-                }
-              </div>
-            </div>
-
-            <!-- {/* Date */} -->
-            <div>
-              <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                Date
-              </p>
-              <p class="text-foreground">
-                <!-- {new Date(selectedOrderData.createdAt).toLocaleDateString()} -->
-                2/14/2024
-              </p>
-            </div>
-
-            <!-- {/* Amount */} -->
-            <div>
-              <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                Total
-              </p>
-              <p class="font-serif text-2xl font-bold text-primary">
-                $1200
-              </p>
-            </div>
-
-            <!-- {/* Items */} -->
-            <div>
-              <p class="text-xs text-muted-foreground uppercase tracking-wide mb-3">
-                Items
-              </p>
-              <div class="space-y-2">
-                <div key={index} class="text-sm text-muted-foreground">
-                  <p>Blush Pink M</p>
-                  <p>Qty: 2</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- {/* Action Buttons */} -->
-            <div class="pt-4 border-t border-border">
-              <button matButton="filled" class="w-full px-4 py-2 mb-2">
-                Send Update
-              </button>
-              <button matButton="outlined" class="w-full px-4 py-2">
-                Print Label
-              </button>
-            </div>
-        </div>
+      <div class="lg:col-span-1">
+        <app-order-details [order]="selectedOrder()" (statusChanged)="onStatusUpdate($event)">
+        </app-order-details>
       </div>
     </div>
   `,
   styles: ``,
 })
-export default class Orders {
-  statuses: string[] = ['all', 'pending', 'confirmed', 'shipped', 'delivered'];
+export default class Orders implements OnInit {
+  private readonly orderService = inject(OrdersService);
+  private readonly toaster = inject(Toaster);
+
+  // Almacén de las órdenes puras del Backend
+  orders = signal<any[]>([]);
+
+  // Filtro seleccionado activamente (Enlazado bidireccionalmente al hijo)
+  activeFilter = signal<string>('all');
+
+  // Orden en foco para visualización de detalles
+  selectedOrder = signal<any | null>(null);
+
+  // Computed Signal: Filtra las órdenes automáticamente en memoria de forma instantánea
+  filteredOrders = computed(() => {
+    const filter = this.activeFilter().toLowerCase();
+    const allOrders = this.orders();
+
+    if (filter === 'all') return allOrders;
+    return allOrders.filter((o) => o.status?.toLowerCase() === filter);
+  });
+
+  ngOnInit(): void {
+    // Comentamos temporalmente la llamada al servicio real:
+    // this.loadOrders();
+
+    // Inyectamos datos de prueba directamente para ver el diseño interactivo:
+    const mockOrders = [
+      {
+        id: 'd3b07384-order-1',
+        total_amount: 154.5,
+        status: 'pending',
+        created_at: new Date(),
+        items: [
+          { id: 'item-1', product_name: 'Vestido Rosato Premium', quantity: 2, price: 50.0 },
+          { id: 'item-2', product_name: 'Top Casual Silk', quantity: 1, price: 54.5 },
+        ],
+      },
+      {
+        id: 'a1c29475-order-2',
+        total_amount: 45.0,
+        status: 'shipped',
+        created_at: new Date(Date.now() - 86400000), // Ayer
+        items: [{ id: 'item-3', product_name: 'Falda Midi Plisada', quantity: 1, price: 45.0 }],
+      },
+      {
+        id: 'f9e8d7c6-order-3',
+        total_amount: 210.0,
+        status: 'delivered',
+        created_at: new Date(Date.now() - 172800000), // Hace 2 días
+        items: [{ id: 'item-4', product_name: 'Blusa Satín Elegante', quantity: 3, price: 70.0 }],
+      },
+    ];
+
+    this.orders.set(mockOrders);
+    this.selectedOrder.set(mockOrders[0]); // Selecciona la primera automáticamente
+  }
+
+  loadOrders(): void {
+    this.orderService.getAll().subscribe({
+      next: (data) => {
+        this.orders.set(data);
+        // Selección automática del primer elemento para mantener la estética Premium de Rosato
+        if (data.length > 0 && !this.selectedOrder()) {
+          this.selectedOrder.set(data[0]);
+        }
+      },
+      error: () => this.toaster.error('No se pudieron recuperar las órdenes del servidor'),
+    });
+  }
+
+  onOrderSelect(order: any): void {
+    this.selectedOrder.set(order);
+  }
+
+  onStatusUpdate(newStatus: string): void {
+    const current = this.selectedOrder();
+    if (!current) return;
+
+    // Creamos el objeto de la orden modificada con el nuevo estado
+    const updatedOrder = { ...current, status: newStatus.toLowerCase() };
+
+    // 1. Actualizamos la lista completa de órdenes en memoria
+    this.orders.update((prev) => prev.map((o) => (o.id === current.id ? updatedOrder : o)));
+
+    // 2. Actualizamos la orden que se está viendo a la derecha
+    this.selectedOrder.set(updatedOrder);
+
+    this.toaster.success(`Estado simulado cambiado a: ${newStatus} 🎉`);
+  }
+
+  // onStatusUpdate(newStatus: string): void {
+  //   const current = this.selectedOrder();
+  //   if (!current) return;
+
+  //   // 1. Casteamos el string genérico al tipo estricto que acepta tu servicio
+  //   const statusPayload = newStatus.toLowerCase() as OrderStatus;
+
+  //   // 2. Le pasamos el estado directamente (o como lo requiera tu servicio)
+  //   // Si tu servicio recibe el string directo: updateStatus(id, statusPayload)
+  //   // Si recibe un objeto con ese tipo: updateStatus(id, { status: statusPayload })
+  //   this.orderService.updateStatus(current.id, statusPayload).subscribe({
+  //     next: (updatedOrder) => {
+  //       this.toaster.success(`Orden #${current.id.substring(0, 8)} actualizada a ${newStatus} 🎉`);
+
+  //       // Sincronización reactiva instantánea
+  //       this.orders.update((prev) => prev.map((o) => (o.id === current.id ? updatedOrder : o)));
+  //       this.selectedOrder.set(updatedOrder);
+  //     },
+  //     error: () => this.toaster.error('Error al intentar cambiar el estado en el servidor'),
+  //   });
+  // }
 }
