@@ -20,7 +20,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatIconModule,
   ],
   template: `
-    <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-6 animate-fade-in-down">
+    <mat-card appearance="outlined" class="p-6 mb-6 animate-fade-in-down">
       <h2 class="text-xl font-semibold text-gray-800 mb-4">
         {{ categoryToEdit() ? 'Editar Categoría' : 'Nueva Categoría' }}
       </h2>
@@ -80,7 +80,7 @@ import { MatIconModule } from '@angular/material/icon';
           </div>
         </div>
       </form>
-    </div>
+    </mat-card>
   `,
   styles: ``,
 })

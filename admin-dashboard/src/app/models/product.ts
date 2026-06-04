@@ -23,6 +23,7 @@ export interface Product {
   name: string;
   slug: string;
   brand: string;
+  image: string;
   short_description?: string;
   description: string;
   base_price: number;

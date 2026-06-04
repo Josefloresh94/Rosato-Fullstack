@@ -1,4 +1,4 @@
-import { Component, inject, signal, ViewChild, TemplateRef } from '@angular/core';
+import { Component, inject, signal, ViewChild, TemplateRef, computed } from '@angular/core';
 import { CategoriesTable } from '../../components/categories/categories-table/categories-table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -6,11 +6,12 @@ import { Category } from '../../models/category';
 import { CategoryService } from '../../services/category-service';
 import { CategoryForm } from '../../components/categories/category-form/category-form';
 import { Toaster } from '../../services/toaster';
+import { SearchBar } from "../../components/search-bar/search-bar";
 
 
 @Component({
   selector: 'app-categories',
-  imports: [MatButtonModule, MatIcon, CategoriesTable, CategoryForm],
+  imports: [MatButtonModule, MatIcon, CategoriesTable, CategoryForm, SearchBar],
   template: `
     <div class="flex justify-between items-center mb-8">
       <div>
@@ -37,6 +38,17 @@ import { Toaster } from '../../services/toaster';
         (formSaved)="onSaveCategory($event)"
       />
     }
+
+    <!-- Buscador -->
+    <app-search-bar
+      [label]="'Buscar Categoría'"
+      [placeholder]="'Ej. Camisas, Pantalones...'"
+      [filteredOptions]="filteredCategories()"
+      (queryChanged)="onSearchQueryChange($event)"
+      (optionSelected)="onCategorySelect($event)"
+      (cleared)="resetSearch()"
+    />
+
     <!-- Products Table -->
     <app-categories-table
       [dataSource]="categories()"
@@ -167,5 +179,44 @@ export default class Categories {
         error: () => this.toast.error('Error al intentar guardar la categoría'),
       });
     }
+  }
+
+  // 1. Agrega una signal para el término de búsqueda actual
+  searchTerm = signal<string>('');
+
+  // 2. Creamos una Computed Signal para filtrar en tiempo real de forma ultra reactiva
+  filteredCategories = computed(() => {
+    const query = this.searchTerm().toLowerCase().trim();
+    const allCategories = this.categories(); // Tu signal que ya trae los datos del servicio
+
+    if (!query) {
+      return allCategories;
+    }
+
+    return allCategories.filter(
+      (cat) =>
+        cat.name.toLowerCase().includes(query) ||
+        (cat.description && cat.description.toLowerCase().includes(query)),
+    );
+  });
+
+  // 3. Métodos que responden a los outputs del buscador:
+  onSearchQueryChange(query: string): void {
+    this.searchTerm.set(query);
+  }
+
+  onCategorySelect(category: any): void {
+    // Acción cuando el usuario selecciona una opción del autocompletado
+    console.log('Categoría seleccionada en el buscador:', category);
+
+    // Opcional: Si quieres que al dar click la tabla se reduzca solo a ese elemento:
+    this.searchTerm.set(category.name);
+
+    // O puedes abrir directamente el formulario de edición si lo deseas:
+    // this.triggerEdit(category);
+  }
+
+  resetSearch(): void {
+    this.searchTerm.set('');
   }
 }

@@ -4,7 +4,7 @@ import { MatCard } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
-const ELEMENT_DATA: Category[] = []
+
 @Component({
   selector: 'app-categories-table',
   imports: [MatCard, MatTableModule, MatButtonModule, MatIcon],
@@ -125,10 +125,8 @@ const ELEMENT_DATA: Category[] = []
   styles: ``,
 })
 export class CategoriesTable {
-  // Angular 21 Signals para el set dinámico de filas
   dataSource = input<Category[]>([]);
 
-  // Despachadores de eventos usando la API nativa output()
   editAction = output<Category>();
   deleteAction = output<string>();
   displayedColumns: string[] = ['name', 'slug', 'description', 'is_active', 'actions'];
