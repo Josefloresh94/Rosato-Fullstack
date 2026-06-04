@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, TemplateRef } from '@angular/core';
 import { HotToastService } from '@ngxpert/hot-toast';
 
 @Injectable({
@@ -13,5 +13,14 @@ export class Toaster {
 
   error(message: string) {
     this.toaster.error(message);
+  }
+
+  showConfirm(template: TemplateRef<any>) {
+    return this.toaster.show(template, {
+      autoClose: false,
+      dismissible: true,
+      icon: '🗑️',
+      style: { padding: '14px', minWidth: '300px' },
+    });
   }
 }

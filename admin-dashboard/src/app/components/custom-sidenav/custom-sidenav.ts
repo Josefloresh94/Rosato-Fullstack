@@ -46,6 +46,11 @@ export class CustomSidenav {
     },
     {
       icon: 'shopping_cart',
+      label: 'Categories',
+      route: 'categories',
+    },
+    {
+      icon: 'shopping_cart',
       label: 'Products',
       route: 'products',
     },
